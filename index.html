@@ -138,31 +138,56 @@ train_cv  &lt;- train[-trainingIndex,]</code></pre>
 <pre><code>## Loading required package: randomForest
 ## randomForest 4.6-10
 ## Type rfNews() to see new features/changes/bug fixes.</code></pre>
-<pre class="r"><code>summary(rf_fit)</code></pre>
-<pre><code>##                 Length Class      Mode     
-## call                4  -none-     call     
-## type                1  -none-     character
-## predicted       15699  factor     numeric  
-## err.rate         3000  -none-     numeric  
-## confusion          30  -none-     numeric  
-## votes           78495  matrix     numeric  
-## oob.times       15699  -none-     numeric  
-## classes             5  -none-     character
-## importance         52  -none-     numeric  
-## importanceSD        0  -none-     NULL     
-## localImportance     0  -none-     NULL     
-## proximity           0  -none-     NULL     
-## ntree               1  -none-     numeric  
-## mtry                1  -none-     numeric  
-## forest             14  -none-     list     
-## y               15699  factor     numeric  
-## test                0  -none-     NULL     
-## inbag               0  -none-     NULL     
-## xNames             52  -none-     character
-## problemType         1  -none-     character
-## tuneValue           1  data.frame list     
-## obsLevels           5  -none-     character</code></pre>
-<p>Check the model performance on out of sample (cross validation) data using confusionMatrix.</p>
+<pre class="r"><code>print(rf_fit$finalModel)</code></pre>
+<pre><code>## 
+## Call:
+##  randomForest(x = x, y = y, mtry = param$mtry) 
+##                Type of random forest: classification
+##                      Number of trees: 500
+## No. of variables tried at each split: 3
+## 
+##         OOB estimate of  error rate: 0.45%
+## Confusion matrix:
+##      A    B    C    D    E  class.error
+## A 4462    2    0    0    0 0.0004480287
+## B   11 3025    2    0    0 0.0042791310
+## C    0   16 2720    2    0 0.0065741417
+## D    0    0   29 2543    1 0.0116595414
+## E    0    0    1    7 2878 0.0027720028</code></pre>
+<pre class="r"><code>confusionMatrix(train_model$classe, predict(rf_fit, train_model))</code></pre>
+<pre><code>## Confusion Matrix and Statistics
+## 
+##           Reference
+## Prediction    A    B    C    D    E
+##          A 4464    0    0    0    0
+##          B    0 3038    0    0    0
+##          C    0    0 2738    0    0
+##          D    0    0    0 2573    0
+##          E    0    0    0    0 2886
+## 
+## Overall Statistics
+##                                      
+##                Accuracy : 1          
+##                  95% CI : (0.9998, 1)
+##     No Information Rate : 0.2843     
+##     P-Value [Acc &gt; NIR] : &lt; 2.2e-16  
+##                                      
+##                   Kappa : 1          
+##  Mcnemar's Test P-Value : NA         
+## 
+## Statistics by Class:
+## 
+##                      Class: A Class: B Class: C Class: D Class: E
+## Sensitivity            1.0000   1.0000   1.0000   1.0000   1.0000
+## Specificity            1.0000   1.0000   1.0000   1.0000   1.0000
+## Pos Pred Value         1.0000   1.0000   1.0000   1.0000   1.0000
+## Neg Pred Value         1.0000   1.0000   1.0000   1.0000   1.0000
+## Prevalence             0.2843   0.1935   0.1744   0.1639   0.1838
+## Detection Rate         0.2843   0.1935   0.1744   0.1639   0.1838
+## Detection Prevalence   0.2843   0.1935   0.1744   0.1639   0.1838
+## Balanced Accuracy      1.0000   1.0000   1.0000   1.0000   1.0000</code></pre>
+<p>From the confusion matrix on training data, we can conclude that it may be overfitting. Also the out of bag error estimate shows 0.56%.</p>
+<p>Lets the model performance on out of sample (cross validation) data using confusionMatrix.</p>
 <pre class="r"><code>confusionMatrix(train_cv$classe,predict(rf_fit,train_cv))</code></pre>
 <pre><code>## Confusion Matrix and Statistics
 ## 
@@ -195,7 +220,7 @@ train_cv  &lt;- train[-trainingIndex,]</code></pre>
 ## Detection Rate         0.2842   0.1932   0.1728   0.1626   0.1835
 ## Detection Prevalence   0.2845   0.1935   0.1744   0.1639   0.1838
 ## Balanced Accuracy      0.9994   0.9959   0.9954   0.9985   0.9992</code></pre>
-<p>Accuracy on Out of sample data as shown in the confusion Matrix is 99.64</p>
+<p>Accuracy on Out of sample data as shown in the confusion Matrix is 99.64% and the error rate is 0.358% which looks positive.</p>
 <p>Here is a list of the features with their importance in the model.</p>
 <pre class="r"><code>varImp(rf_fit)</code></pre>
 <pre><code>## rf variable importance
