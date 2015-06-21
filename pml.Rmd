@@ -89,17 +89,19 @@ Lets try creating a model with randomForest method. Since it is one of decision 
 ```{r}
 rf_fit <- train(classe ~ .,train_model,method="rf",tuneGrid=data.frame(mtry=3),trControl=trainControl(method="cv"))
 
-summary(rf_fit)
+print(rf_fit$finalModel)
+
+confusionMatrix(train_model$classe, predict(rf_fit, train_model))
 ```
+From the confusion matrix on training data, we can conclude that it may be overfitting. Also the out of bag error estimate shows 0.56%.
 
-
-Check the model performance on out of sample (cross validation) data using confusionMatrix. 
+Lets the model performance on out of sample (cross validation) data using confusionMatrix. 
 ```{r}
 confusionMatrix(train_cv$classe,predict(rf_fit,train_cv))
 
 
 ```
-Accuracy on Out of sample data as shown in the confusion Matrix is 99.64
+Accuracy on Out of sample data as shown in the confusion Matrix is 99.64% and the error rate is 0.358% which looks positive.
 
 Here is a list of the features with their importance in the model.
 ```{r}
