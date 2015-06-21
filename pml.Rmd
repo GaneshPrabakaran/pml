@@ -108,3 +108,8 @@ Here is a list of the features with their importance in the model.
 
 varImp(rf_fit)
 ```
+
+And finally prediction on test data.
+```{r}
+predTest <- predict(rf_fit,test)
+```
