@@ -113,7 +113,7 @@ View(sqldf(&quot;select * from rawtest order by num_window, user_name, raw_times
 <p>Feature selecction and data cleanup:</p>
 <p>The columns -usernames, raw_timestamp_part_1, raw_timestamp_part_2, new_window, num_window does not seem to be relevant or help in prediction.</p>
 <p>Also, the derived columns which has NA in all rows except new window row can be removed.</p>
-<pre class="r"><code>irrelevant_col &lt;- c(&quot;X&quot;,&quot;user_name&quot;,&quot;raw_timestamp_part_1&quot;,&quot;raw_timestamp_part_2&quot;,&quot;cvtd_timestamp   new_window&quot;,&quot;num_window&quot;)
+<pre class="r"><code>irrelevant_col &lt;- c(&quot;X&quot;,&quot;user_name&quot;,&quot;raw_timestamp_part_1&quot;,&quot;raw_timestamp_part_2&quot;,&quot;cvtd_timestamp&quot;,&quot;new_window&quot;,&quot;num_window&quot;)
 
 m_train &lt;- rawtrain[,!names(rawtrain) %in% irrelevant_col]
 m_test &lt;- rawtest[,!names(rawtest) %in% irrelevant_col]
@@ -125,8 +125,8 @@ test &lt;- m_test[, which(na_col == 0)]</code></pre>
 </div>
 <div id="section-5" class="section level2">
 <h2></h2>
-<p>Cross Validation Training data has enough volume for 60-40 split for cross validation. Based on the model performance we can switch to different split if needed.</p>
-<pre class="r"><code>trainingIndex  &lt;- createDataPartition(train$classe, p=.60, list=FALSE)
+<p>Cross Validation Training data has enough volume for 80-20 split for cross validation. Based on the model performance we can switch to different split if needed.</p>
+<pre class="r"><code>trainingIndex  &lt;- createDataPartition(train$classe, p=.80, list=FALSE)
 train_model &lt;- train[ trainingIndex,]
 train_cv  &lt;- train[-trainingIndex,]</code></pre>
 </div>
@@ -138,77 +138,64 @@ train_cv  &lt;- train[-trainingIndex,]</code></pre>
 <pre><code>## Loading required package: randomForest
 ## randomForest 4.6-10
 ## Type rfNews() to see new features/changes/bug fixes.</code></pre>
-<p>Check the model performance using confusionMatrix.</p>
+<pre class="r"><code>summary(rf_fit)</code></pre>
+<pre><code>##                 Length Class      Mode     
+## call                4  -none-     call     
+## type                1  -none-     character
+## predicted       15699  factor     numeric  
+## err.rate         3000  -none-     numeric  
+## confusion          30  -none-     numeric  
+## votes           78495  matrix     numeric  
+## oob.times       15699  -none-     numeric  
+## classes             5  -none-     character
+## importance         52  -none-     numeric  
+## importanceSD        0  -none-     NULL     
+## localImportance     0  -none-     NULL     
+## proximity           0  -none-     NULL     
+## ntree               1  -none-     numeric  
+## mtry                1  -none-     numeric  
+## forest             14  -none-     list     
+## y               15699  factor     numeric  
+## test                0  -none-     NULL     
+## inbag               0  -none-     NULL     
+## xNames             52  -none-     character
+## problemType         1  -none-     character
+## tuneValue           1  data.frame list     
+## obsLevels           5  -none-     character</code></pre>
+<p>Check the model performance on out of sample (cross validation) data using confusionMatrix.</p>
 <pre class="r"><code>confusionMatrix(train_cv$classe,predict(rf_fit,train_cv))</code></pre>
 <pre><code>## Confusion Matrix and Statistics
 ## 
 ##           Reference
 ## Prediction    A    B    C    D    E
-##          A 2226    3    3    0    0
-##          B   13 1500    5    0    0
-##          C    0   15 1351    2    0
-##          D    0    0   18 1268    0
-##          E    0    0    3    9 1430
+##          A 1115    0    0    0    1
+##          B    1  758    0    0    0
+##          C    0    6  678    0    0
+##          D    0    0    5  638    0
+##          E    0    0    0    1  720
 ## 
 ## Overall Statistics
-##                                           
-##                Accuracy : 0.991           
-##                  95% CI : (0.9886, 0.9929)
-##     No Information Rate : 0.2854          
-##     P-Value [Acc &gt; NIR] : &lt; 2.2e-16       
-##                                           
-##                   Kappa : 0.9886          
-##  Mcnemar's Test P-Value : NA              
+##                                         
+##                Accuracy : 0.9964        
+##                  95% CI : (0.994, 0.998)
+##     No Information Rate : 0.2845        
+##     P-Value [Acc &gt; NIR] : &lt; 2.2e-16     
+##                                         
+##                   Kappa : 0.9955        
+##  Mcnemar's Test P-Value : NA            
 ## 
 ## Statistics by Class:
 ## 
 ##                      Class: A Class: B Class: C Class: D Class: E
-## Sensitivity            0.9942   0.9881   0.9790   0.9914   1.0000
-## Specificity            0.9989   0.9972   0.9974   0.9973   0.9981
-## Pos Pred Value         0.9973   0.9881   0.9876   0.9860   0.9917
-## Neg Pred Value         0.9977   0.9972   0.9955   0.9983   1.0000
-## Prevalence             0.2854   0.1935   0.1759   0.1630   0.1823
-## Detection Rate         0.2837   0.1912   0.1722   0.1616   0.1823
+## Sensitivity            0.9991   0.9921   0.9927   0.9984   0.9986
+## Specificity            0.9996   0.9997   0.9981   0.9985   0.9997
+## Pos Pred Value         0.9991   0.9987   0.9912   0.9922   0.9986
+## Neg Pred Value         0.9996   0.9981   0.9985   0.9997   0.9997
+## Prevalence             0.2845   0.1947   0.1741   0.1629   0.1838
+## Detection Rate         0.2842   0.1932   0.1728   0.1626   0.1835
 ## Detection Prevalence   0.2845   0.1935   0.1744   0.1639   0.1838
-## Balanced Accuracy      0.9966   0.9926   0.9882   0.9943   0.9991</code></pre>
-<p>Lets try with increased training data and see if it has an improvement.</p>
-<pre class="r"><code>trainingIndex  &lt;- createDataPartition(train$classe, p=.80, list=FALSE)
-train_model &lt;- train[ trainingIndex,]
-train_cv  &lt;- train[-trainingIndex,]
-rf_fit &lt;- train(classe ~ .,train_model,method=&quot;rf&quot;,tuneGrid=data.frame(mtry=3),trControl=trainControl(method=&quot;cv&quot;))
-confusionMatrix(train_cv$classe,predict(rf_fit,train_cv))</code></pre>
-<pre><code>## Confusion Matrix and Statistics
-## 
-##           Reference
-## Prediction    A    B    C    D    E
-##          A 1116    0    0    0    0
-##          B    2  753    4    0    0
-##          C    0    6  676    2    0
-##          D    0    0   14  629    0
-##          E    0    0    0    3  718
-## 
-## Overall Statistics
-##                                           
-##                Accuracy : 0.9921          
-##                  95% CI : (0.9888, 0.9946)
-##     No Information Rate : 0.285           
-##     P-Value [Acc &gt; NIR] : &lt; 2.2e-16       
-##                                           
-##                   Kappa : 0.99            
-##  Mcnemar's Test P-Value : NA              
-## 
-## Statistics by Class:
-## 
-##                      Class: A Class: B Class: C Class: D Class: E
-## Sensitivity            0.9982   0.9921   0.9741   0.9921   1.0000
-## Specificity            1.0000   0.9981   0.9975   0.9957   0.9991
-## Pos Pred Value         1.0000   0.9921   0.9883   0.9782   0.9958
-## Neg Pred Value         0.9993   0.9981   0.9944   0.9985   1.0000
-## Prevalence             0.2850   0.1935   0.1769   0.1616   0.1830
-## Detection Rate         0.2845   0.1919   0.1723   0.1603   0.1830
-## Detection Prevalence   0.2845   0.1935   0.1744   0.1639   0.1838
-## Balanced Accuracy      0.9991   0.9951   0.9858   0.9939   0.9995</code></pre>
-<p>There is a slight improvement.</p>
+## Balanced Accuracy      0.9994   0.9959   0.9954   0.9985   0.9992</code></pre>
+<p>Accuracy on Out of sample data is 99.929</p>
 </div>
 
 
