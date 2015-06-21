@@ -57,7 +57,7 @@ The columns -usernames, raw_timestamp_part_1, raw_timestamp_part_2, new_window, 
 
 Also, the derived columns which has NA in all rows except new window row can be removed.
 ```{r}
-irrelevant_col <- c("X","user_name","raw_timestamp_part_1","raw_timestamp_part_2","cvtd_timestamp	new_window","num_window")
+irrelevant_col <- c("X","user_name","raw_timestamp_part_1","raw_timestamp_part_2","cvtd_timestamp","new_window","num_window")
 
 m_train <- rawtrain[,!names(rawtrain) %in% irrelevant_col]
 m_test <- rawtest[,!names(rawtest) %in% irrelevant_col]
@@ -70,12 +70,12 @@ test <- m_test[, which(na_col == 0)]
 
 ##
 Cross Validation
-Training data has enough volume for 60-40 split for cross validation. Based on the model performance we can switch to different split if needed.
+Training data has enough volume for 80-20 split for cross validation. Based on the model performance we can switch to different split if needed.
 
 ```{r}
 
 
-trainingIndex  <- createDataPartition(train$classe, p=.60, list=FALSE)
+trainingIndex  <- createDataPartition(train$classe, p=.80, list=FALSE)
 train_model <- train[ trainingIndex,]
 train_cv  <- train[-trainingIndex,]
 
@@ -89,24 +89,20 @@ Lets try creating a model with randomForest method. Since it is one of decision 
 ```{r}
 rf_fit <- train(classe ~ .,train_model,method="rf",tuneGrid=data.frame(mtry=3),trControl=trainControl(method="cv"))
 
+summary(rf_fit)
 ```
 
 
-Check the model performance using confusionMatrix. 
+Check the model performance on out of sample (cross validation) data using confusionMatrix. 
 ```{r}
 confusionMatrix(train_cv$classe,predict(rf_fit,train_cv))
+
+
 ```
+Accuracy on Out of sample data is 99.929
 
-
-Lets try with increased training data and see if it has an improvement.
-
+Here is a view of the feature importance
 ```{r}
-trainingIndex  <- createDataPartition(train$classe, p=.80, list=FALSE)
-train_model <- train[ trainingIndex,]
-train_cv  <- train[-trainingIndex,]
-rf_fit <- train(classe ~ .,train_model,method="rf",tuneGrid=data.frame(mtry=3),trControl=trainControl(method="cv"))
-confusionMatrix(train_cv$classe,predict(rf_fit,train_cv))
 
+varImp(rf_fit)
 ```
-
-There is a slight improvement.
